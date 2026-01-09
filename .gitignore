@@ -1,3 +1,4 @@
 diabetic-retinopathy-detection/
 **/__pycache__/**
 .env
+data/
