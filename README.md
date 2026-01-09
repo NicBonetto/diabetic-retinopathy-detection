@@ -7,6 +7,6 @@ An end-to-end deep learning system for automated detection and grading of diabet
 ## Prerequisites
 - Python 3.8+
 - GPU recommended (but not required)
-- ~15GB available for dataset
+- ~10GB available for dataset
 
 
