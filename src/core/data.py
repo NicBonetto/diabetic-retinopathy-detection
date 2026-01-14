@@ -22,7 +22,7 @@ class DRDataset(Dataset):
         self.image_size = image_size
 
         self.labels_df = pd.read_csv(labels_file)
-        self.image_ids = self.labels_df['id_code'].values
+        self.image_ids = self.labels_df['image_id'].values
         self.labels = self.labels_df['diagnosis'].values
 
         print(f'Loaded {len(self.image_ids)} images from {labels_file}')

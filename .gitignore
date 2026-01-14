@@ -3,3 +3,4 @@ diabetic-retinopathy-detection/
 .env
 data/
 checkpoints/
+config.yaml
