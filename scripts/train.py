@@ -159,7 +159,7 @@ def main():
     print('\nSaving training history plot...')
     fig = plot_training_history(trainer.history)
     fig.savefig(
-        Path(config['training']['checkpoint_dur']) / 'training_history.png',
+        Path(config['training']['checkpoint_dir']) / 'training_history.png',
         dpi=300,
         bbox_inches='tight'
     )
