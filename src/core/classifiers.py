@@ -39,15 +39,15 @@ class DRClassifier(nn.Module):
             feature_dim = model.fc.in_features
             model = nn.Sequential(*list(model.children())[:-2])
         elif backbone == 'efficientnet_b0':
-            model = models.efficientnet_b0(weights='IMAGENET1K_V2' if pretrained else None)
+            model = models.efficientnet_b0(weights='IMAGENET1K_V1' if pretrained else None)
             feature_dim = model.classifier[1].in_features
             model = model.features
         elif backbone == 'efficientnet_b3':
-            model = models.efficientnet_b3(weights='IMAGENET1K_V2' if pretrained else None)
+            model = models.efficientnet_b3(weights='IMAGENET1K_V1' if pretrained else None)
             feature_dim = model.classifier[1].in_features
             model = model.features
         elif backbone == 'vit_b_16':
-            model = models.vit_b_16(weights='IMAGENET1K_V2' if pretrained else None)
+            model = models.vit_b_16(weights='IMAGENET1K_V1' if pretrained else None)
             feature_dim = model.heads.head.in_features
             model.heads = nn.Identity()
         else:
