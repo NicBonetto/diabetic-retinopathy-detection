@@ -3,9 +3,10 @@ import argparse
 import yaml
 from pathlib import Path
 
+import numpy as np
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, WeightedRandomSampler
 from torch.optim import Adam, SGD
 from torch.optim.lr_scheduler import CosineAnnealingLR, ReduceLROnPlateau
 
@@ -40,13 +41,35 @@ def setup_data_loaders(config: dict) -> tuple:
         image_size=tuple(config['data']['image_size'])
     )
 
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=config['training']['batch_size'],
-        shuffle=True,
-        num_workers=config['training']['num_workers'],
-        pin_memory=True
-    )
+    if config['training'].get('use_weighted_sampler', False):
+        print("Using weighted random sampler for class imbalance...")
+    
+        train_labels = train_dataset.labels
+        class_counts = np.bincount(train_labels)
+    
+        class_weights = 1.0 / class_counts
+    
+        sample_weights = [class_weights[label] for label in train_labels]
+    
+        sampler = WeightedRandomSampler(
+            weights=sample_weights,
+            num_samples=len(sample_weights),
+            replacement=True
+        )
+    
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=config['training']['batch_size'],
+            sampler=sampler,
+            num_workers=config['training']['num_workers']
+        )
+    else:
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=config['training']['batch_size'],
+            shuffle=True,
+            num_workers=config['training']['num_workers']
+        )
 
     val_loader = DataLoader(
         val_dataset,
