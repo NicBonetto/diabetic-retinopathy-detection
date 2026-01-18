@@ -19,7 +19,7 @@ from src.utils.metrics import (
     print_metrics_report,
     plot_confusion_matrix
 )
-from src.utils.visualize import (
+from src.utils.visualizations import (
     plot_roc_curves,
     visualize_predictions,
     get_gradcam_viz
@@ -106,6 +106,8 @@ def generate_gradcam_samples(
     n_samples: int = 5
 ):
     """Generate Grad-CAM visualizaions."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+
     print('Generating Grad-CAM samples...')
 
     preds = results['predictions']
@@ -155,58 +157,58 @@ def generate_gradcam_samples(
 
         plt.tight_layout()
         plt.savefig(
-            output_dir / f'gradcam_correct_class{class_id}_{class_names[class_id]}.png',
+            output_dir / f'gradcam_correct_class{class_id}_{class_names[class_id]}.png'.replace(' ', '_'),
             dpi=150,
             bbox_inches='tight'
         )
         plt.close()
 
-        print(' Generating error cases...')
-        incorrect_indices = np.where(preds != labels)[0]
-        if len(incorrect_indices) > 0:
-            confidences = np.max(probs[incorrect_indices], axis=1)
-            worst_errors = incorrect_indices[np.argsort(confidences)[-min(3, len(incorrect_indices)):]]
+    print(' Generating error cases...')
+    incorrect_indices = np.where(preds != labels)[0]
+    if len(incorrect_indices) > 0:
+        confidences = np.max(probs[incorrect_indices], axis=1)
+        worst_errors = incorrect_indices[np.argsort(confidences)[-min(3, len(incorrect_indices)):]]
 
-            for i, idx in enumerate(worst_errors):
-                true_class = labels[idx]
-                pred_class = preds[idx]
-                confidence = probs[idx, pred_class]
+        for i, idx in enumerate(worst_errors):
+            true_class = labels[idx]
+            pred_class = preds[idx]
+            confidence = probs[idx, pred_class]
 
-                image_tensor, _ = dataset[idx]
-                image_tensor = image_tensor.unsqueeze(0).to(device)
+            image_tensor, _ = dataset[idx]
+            image_tensor = image_tensor.unsqueeze(0).to(device)
 
-                image_id = dataset.image_ids[idx]
-                img_path = dataset.data_dir / f'{image_id}.png'
-                original_img = np.array(Image.open(img_path).convert('RGB'))
+            image_id = dataset.image_ids[idx]
+            img_path = dataset.data_dir / f'{image_id}.png'
+            original_img = np.array(Image.open(img_path).convert('RGB'))
 
-                gradcam_viz = get_gradcam_viz(
-                    model=model,
-                    input_tensor=image_tensor,
-                    original_image=original_img.astype(np.float32) / 255.0,
-                    target_layer=target_layer,
-                    target_class=pred_class
-                )
+            gradcam_viz = get_gradcam_viz(
+                model=model,
+                input_tensor=image_tensor,
+                original_image=original_img.astype(np.float32) / 255.0,
+                target_layer=target_layer,
+                target_class=pred_class
+            )
                 
-                fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-                ax1.imshow(original_img)
-                ax1.set_title(f'True: {class_names[true_class]}', fontsize=12, color='green')
-                ax1.axis('off')
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+            ax1.imshow(original_img)
+            ax1.set_title(f'True: {class_names[true_class]}', fontsize=12, color='green')
+            ax1.axis('off')
 
-                ax2.imshow(gradcam_viz)
-                ax2.set_title(
-                    f'Predicted: {class_names[pred_class]} ({confidence:.2%})',
-                    fontsize=12,
-                    color='red'
-                )
-                ax2.axis('off')
+            ax2.imshow(gradcam_viz)
+            ax2.set_title(
+                f'Predicted: {class_names[pred_class]} ({confidence:.2%})',
+                fontsize=12,
+                color='red'
+            )
+            ax2.axis('off')
 
-                plt.tight_layout()
-                plt.savefig(
-                    output_dir / f'gradcam_error_{i + 1}_true{true_class}_pred{pred_class}.png',
-                    dpi=150,
-                    bbox_inches='tight'
-                )
-                plt.close()
+            plt.tight_layout()
+            plt.savefig(
+                output_dir / f'gradcam_error_{i + 1}_true{true_class}_pred{pred_class}.png'.replace(' ', '_'),
+                dpi=150,
+                bbox_inches='tight'
+            )
+            plt.close()
 
     print(f'✓ Saved Grad-CAM visualizations to {output_dir}')
 
@@ -216,6 +218,7 @@ def main():
     parser.add_argument('--data-dir', type=str, required=True, help='Path to image directory')
     parser.add_argument('--labels', type=str, required=True, help='Path to labels CSV')
     parser.add_argument('--output-dir', type=str, default='results/evaluation', help='Output directory')
+    parser.add_argument('--backbone', type=str, default='resnet50', help='Model backbone (resnet50, resnet101, efficientnet_b0, efficientnet_b3)')
     parser.add_argument('--batch-size', type=int, default=32, help='Batch size')
     parser.add_argument('--gradcam-samples', type=int, default=5, help='Number of Grad-CAM samples per class')
 
@@ -235,9 +238,20 @@ def main():
 
     class_names = ['No DR', 'Mild', 'Moderate', 'Severe', 'Proliferative']
 
+    if 'efficientnet_b0' in args.backbone:
+        image_size = 224
+    elif 'efficientnet_b3' in args.backbone:
+        image_size = 300
+    else:
+        image_size = 512
+
     print('Loading model...')
-    model = create_model(backbone='resnet50', num_classes=5, pretrained=False)
-    checkpoint = torch.load(args.checkpoint, map_location=device)
+    model = create_model(backbone=args.backbone, num_classes=5, pretrained=False)
+    checkpoint = torch.load(
+        args.checkpoint,
+        map_location=device,
+        weights_only=False
+    )
     model.load_state_dict(checkpoint['model_state_dict'])
     model = model.to(device)
     print('✓ Model loaded\n')
@@ -247,7 +261,7 @@ def main():
         data_dir=args.data_dir,
         labels_file=args.labels,
         transform=DRDataset.get_val_transforms(),
-        image_size=(512, 512)
+        image_size=(image_size, image_size)
     )
 
     data_loader = DataLoader(

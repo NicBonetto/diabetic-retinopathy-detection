@@ -6,6 +6,7 @@ from typing import Optional, Tuple
 import cv2
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.image import show_cam_on_image
+from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 
 def get_gradcam_viz(
     model: torch.nn.Module,
@@ -18,10 +19,25 @@ def get_gradcam_viz(
     """Generate Grad-CAM visualization."""
     cam = GradCAM(model=model, target_layers=[target_layer])
 
-    grayscale_cam = cam(input_tensor=input_tensor, targets=None if target_class is None else [target_class])
+    if target_class is None:
+        targets = None
+    else:
+        targets = [ClassifierOutputTarget(target_class)]
+
+    grayscale_cam = cam(input_tensor=input_tensor, targets=targets)
     grayscale_cam = grayscale_cam[0, :]
 
-    viz = show_cam_on_image(original_image, grayscale_cam, use_rgb=True, image_weight=alpha)
+    cam_height, cam_width = grayscale_cam.shape
+    if original_image.shape[:2] != (cam_height, cam_width):
+        original_image_resized = cv2.resize(
+            original_image, 
+            (cam_width, cam_height),
+            interpolation=cv2.INTER_LINEAR
+        )
+    else:
+        original_image_resized = original_image
+
+    viz = show_cam_on_image(original_image_resized, grayscale_cam, use_rgb=True, image_weight=alpha)
     return viz
 
 def plot_training_history(history: dict, save_path: Optional[str]=None):
