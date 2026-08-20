@@ -150,7 +150,14 @@ def plot_confusion_matrix(
     normalize: bool=False,
     title: str='Confusion Matrix'
 ):
-    """Plot confusion matrix."""
+    """
+    Plot confusion matrix.
+
+    Assumes the caller has pinned a non-interactive matplotlib backend; the
+    CLI entry points do this at import. Deliberately does not call
+    matplotlib.use() itself, since force=True would close any figure the
+    caller currently has open.
+    """
     import matplotlib.pyplot as plt
     import seaborn as sns
 

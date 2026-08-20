@@ -1,12 +1,20 @@
 from typing import Optional
 
 import cv2
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.image import show_cam_on_image
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+
+# This module only ever writes figures to disk, so pin the non-interactive
+# backend. An auto-selected GUI backend starts a non-daemon event-loop thread,
+# which blocks interpreter exit -- under `jupyter`'s `!cmd` that leaves the
+# inherited stdout pipe open and the notebook cell hangs forever.
+# Safe to call after the pyplot import: no figure has been created yet.
+matplotlib.use('Agg')
 
 
 def get_gradcam_viz(

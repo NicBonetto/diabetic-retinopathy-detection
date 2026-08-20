@@ -2,6 +2,7 @@ import argparse
 import random
 from pathlib import Path
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
@@ -279,6 +280,9 @@ def main():
         dpi=300,
         bbox_inches='tight'
     )
+    # Release the figure: an abandoned figure keeps a manager reference alive,
+    # which under a GUI backend would keep the process from exiting.
+    plt.close(fig)
 
     print('\nTraining complete!')
     print(f'Best validation kappa: {trainer.best_val_kappa:.4f}')

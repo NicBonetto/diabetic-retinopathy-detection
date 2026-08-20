@@ -2,6 +2,7 @@ import argparse
 import json
 from pathlib import Path
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -20,6 +21,10 @@ from dr_detection.utils.visualizations import (
     get_gradcam_viz,
     plot_roc_curves,
 )
+
+# Headless: this CLI only writes figures to disk. See the note in
+# utils/visualizations.py for why a GUI backend hangs the process on exit.
+matplotlib.use('Agg')
 
 
 def evaluate_model(
