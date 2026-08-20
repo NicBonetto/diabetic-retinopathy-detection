@@ -1,0 +1,25 @@
+# Environments
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+
+# OS
+.DS_Store
+
+# Secrets and local config
+.env
+config.yaml
+
+# Data and outputs
+data/
+checkpoints/
+results/
+
+# NOTE: uv.lock is intentionally NOT ignored. Commit it so installs are
+# reproducible across machines.

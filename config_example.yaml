@@ -1,0 +1,41 @@
+seed: 42
+
+data:
+  train_dir: "data/processed/train"
+  val_dir: "data/processed/val"
+  train_labels: "data/processed/train_labels.csv"
+  val_labels: "data/processed/val_labels.csv"
+  image_size: [512, 512]
+  # Fundus preprocessing. Set enabled: false when the images on disk have
+  # already been through `dr-preprocess --preprocess-images` -- keep
+  # ben_graham: true in that case so augmentation still skips colour jitter.
+  preprocess:
+    enabled: true
+    target_radius: 300
+    ben_graham: true
+    ben_graham_sigma: 10
+
+model:
+  backbone: "resnet50"
+  num_classes: 5
+  pretrained: true
+  dropout: 0.3
+  freeze_backbone: false
+
+training:
+  batch_size: 16
+  num_epochs: 30
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  optimizer: 'adam'
+  momentum: 0.9
+  scheduler: 'cosine'
+  num_workers: 4 
+  checkpoint_dir: 'checkpoints'
+  early_stopping_patience: 5
+  # Class imbalance: enable at most one of the two. use_class_weights
+  # reweights the loss; use_weighted_sampler oversamples rare classes.
+  use_class_weights: false
+  use_weighted_sampler: false
+
+
