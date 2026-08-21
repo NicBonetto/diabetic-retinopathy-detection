@@ -89,20 +89,6 @@ Attention concentrates on discrete lesions in the lower and upper retina rather 
 on the image border or the optic disc, which is a basic sanity check that the model
 is keying on retinal pathology rather than acquisition artefacts.
 
-### Caveats
-
-- The test set is a stratified holdout of the APTOS **training** set, not the
-  competition's test set, so these scores are not directly comparable to the
-  public leaderboard.
-- 5-fold cross-validation is 3/5 complete; the remaining folds are pending.
-- Sensitivity on the three minority grades is weak (0.28–0.33) with wide fold-to-fold
-  variance. **This model is not usable for screening as-is.**
-- Most consequentially, **Proliferative DR — the most sight-threatening grade — is
-  under-graded in 67% of cases on average** (50%/68%/82% across folds). In a screening
-  context this is the unsafe direction: it is a missed referral, not a redundant one.
-  Fixing the grade-boundary calibration is a prerequisite to any clinical framing of
-  this work.
-
 ## Method
 
 **Preprocessing.** Fundus photographs arrive at widely varying zoom levels, so a
