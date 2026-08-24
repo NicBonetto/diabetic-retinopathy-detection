@@ -28,8 +28,8 @@ deviation across folds; figures below are from the final fold (2).
 
 Quadratic weighted kappa is the primary metric, and is also the official APTOS 2019
 metric. It is chance-corrected, which matters because 49% of the dataset is a single
-class, and it is distance-weighted, which matters because the grades are ordinal —
-calling a Severe case Moderate is a near-miss, calling it No DR a much larger miss. Checkpoint
+class, and it is distance-weighted, which matters because the grades are ordinal.
+Calling a Severe case Moderate is a near-miss, calling it No DR is a much larger miss. Checkpoint
 selection and early stopping are both driven by kappa rather than accuracy.
 
 ### Per-class performance
@@ -70,7 +70,7 @@ both directions:
 
 Grade 3 absorbs the difference, being predicted 3–6× more often than it occurs, with
 high recall (0.747) but poor precision (0.14–0.22). The single largest cell is true
-Moderate predicted as Severe — roughly **40% of all errors** (83, 104, and 45 cases
+Moderate predicted as Severe - roughly **40% of all errors** (83, 104, and 45 cases
 out of 150). Resolving that one boundary would lift accuracy from 0.642 to
 approximately 0.79 with nothing else changed.
 
@@ -81,7 +81,7 @@ Two observations locate the problem. Macro AUC is high and tight across folds
 
 ![Grad-CAM example](docs/gradcam_example.png)
 
-*Left: the preprocessed input — retina rescaled to a constant radius, Ben Graham
+*Left: the preprocessed input where the retina rescaled to a constant radius, Ben Graham
 local-average subtraction, circular mask. Right: Grad-CAM over the final
 convolutional block for a correctly classified Severe case (91% confidence).*
 
